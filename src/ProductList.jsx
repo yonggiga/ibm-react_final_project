@@ -1,10 +1,21 @@
 import React, { useState,useEffect } from 'react';
 import './ProductList.css'
 import CartItem from './CartItem';
+import { useDispatch, useSelector} from 'react-redux';
+import { addItem } from './CartSlice';
 function ProductList() {
     const [showCart, setShowCart] = useState(false); 
     const [showPlants, setShowPlants] = useState(false); // State to control the visibility of the About Us page
+    const [addedToCart, setAddedToCart] = useState({});
+    const totalItemInCart = useSelector(x => x.cart.items).reduce((tot, item) => tot + item.quantity, 0);
 
+    const dispatch = useDispatch();
+    const handleAddToCart = (plant) => {
+        dispatch(addItem(plant));
+        setAddedToCart({ ...addedToCart, [plant.name] : true});
+    }
+
+    const totalCartStyle = {position: 'absolute', transform: "translate(-50%,-50%)", fontSize: "16px", color: "white", top: '50%', left: '50%'};
     const plantsArray = [
         {
             category: "Air Purifying Plants",
@@ -235,6 +246,7 @@ function ProductList() {
    const handleCartClick = (e) => {
     e.preventDefault();
     setShowCart(true); // Set showCart to true when cart icon is clicked
+    setAddedToCart({});
 };
 const handlePlantsClick = (e) => {
     e.preventDefault();
@@ -263,12 +275,33 @@ const handlePlantsClick = (e) => {
             </div>
             <div style={styleObjUl}>
                 <div> <a href="#" onClick={(e)=>handlePlantsClick(e)} style={styleA}>Plants</a></div>
-                <div> <a href="#" onClick={(e) => handleCartClick(e)} style={styleA}><h1 className='cart'><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" id="IconChangeColor" height="68" width="68"><rect width="156" height="156" fill="none"></rect><circle cx="80" cy="216" r="12"></circle><circle cx="184" cy="216" r="12"></circle><path d="M42.3,72H221.7l-26.4,92.4A15.9,15.9,0,0,1,179.9,176H84.1a15.9,15.9,0,0,1-15.4-11.6L32.5,37.8A8,8,0,0,0,24.8,32H8" fill="none" stroke="#faf9f9" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" id="mainIconPathAttribute"></path></svg></h1></a></div>
+                <div> <a href="#" onClick={(e) => handleCartClick(e)} style={styleA}><h1 className='cart' style={{position: "relative"}}>
+                    <div style={totalCartStyle}>{totalItemInCart}</div>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" id="IconChangeColor" height="68" width="68"><rect width="156" height="156" fill="none"></rect><circle cx="80" cy="216" r="12"></circle><circle cx="184" cy="216" r="12"></circle><path d="M42.3,72H221.7l-26.4,92.4A15.9,15.9,0,0,1,179.9,176H84.1a15.9,15.9,0,0,1-15.4-11.6L32.5,37.8A8,8,0,0,0,24.8,32H8" fill="none" stroke="#faf9f9" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" id="mainIconPathAttribute"></path></svg></h1></a></div>
             </div>
         </div>
         {!showCart? (
         <div className="product-grid">
-
+            {plantsArray.map((plantGroup) => (
+                
+                <div className='product-list'>
+                    <h1 className='plant_heading plantname_heading' style={{width: "100%"}}>{plantGroup.category}</h1>
+                    {plantGroup.plants.map((plant) => (
+                        <div className='product-card'>
+                            <div className='product-title'>{plant.name}</div>
+                            <div className='product-price'>{plant.cost}</div>
+                            <img className='product-image' src={plant.image} alt={plant.description}/>
+                            <div style={{fontStyle: "italic"}}>{plant.description}</div>
+                            <button  onClick={() => handleAddToCart(plant)} 
+                                disabled = {addedToCart[plant.name]}
+                                className={`product-button ${addedToCart[plant.name] ? "added-to-cart" : ''}`}>
+                                {!addedToCart[plant.name] ? "Add to Cart" : "Added to Cart"}
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            ))}
+            
 
         </div>
  ) :  (
